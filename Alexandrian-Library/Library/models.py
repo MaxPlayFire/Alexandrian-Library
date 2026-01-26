@@ -23,19 +23,10 @@ class Course(models.Model):
 
 
 class Module(models.Model):
-    title = models.CharField(max_length=200)
-
-
-
-    def __str__(self):
-        return f"{self.hero.name} - {self.ability.title}"
-
-
-class Lesson(models.Model):
     course = models.ForeignKey(
         Course,
         on_delete=models.CASCADE,
-        related_name="lessons"
+        related_name="modules"
     )
     title = models.CharField(max_length=200)
     content = models.TextField()
@@ -48,39 +39,83 @@ class Lesson(models.Model):
         return f"{self.course.title} — {self.title}"
 
 
-class ExerciseCode(models.Model):
-    hero = models.ForeignKey(Hero, on_delete=models.CASCADE, related_name="hero_abilities")
-    ability = models.ForeignKey(Ability, on_delete=models.CASCADE, related_name="ability_links")
+class Lesson(models.Model):
+    module = models.ForeignKey(
+        Module,
+        on_delete=models.CASCADE,
+        related_name="lessons"
+    )
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    order = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ("hero", "ability")
+        ordering = ["order"]
 
     def __str__(self):
-        return f"{self.hero.name} - {self.ability.title}"
-class ExerciseTest(models.Model):
-    hero = models.ForeignKey(Hero, on_delete=models.CASCADE, related_name="hero_abilities")
-    ability = models.ForeignKey(Ability, on_delete=models.CASCADE, related_name="ability_links")
+        return f"{self.module.title} — {self.title}"
 
-    class Meta:
-        unique_together = ("hero", "ability")
-
-    def __str__(self):
-        return f"{self.hero.name} - {self.ability.title}"
 class ExerciseGroup(models.Model):
-    hero = models.ForeignKey(Hero, on_delete=models.CASCADE, related_name="hero_abilities")
-    ability = models.ForeignKey(Ability, on_delete=models.CASCADE, related_name="ability_links")
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="exercisegroups"
+    )
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    order = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ("hero", "ability")
+        ordering = ["order"]
 
     def __str__(self):
-        return f"{self.hero.name} - {self.ability.title}"
+        return f"{self.lesson.title} — {self.title}"
+
+
+class ExerciseCode(models.Model):
+    exercise_groups = models.ForeignKey(
+        ExerciseGroup,
+        on_delete=models.CASCADE,
+        related_name="code_exercises"
+    )
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.exercise_groups.title} — {self.title}"
+
+class ExerciseTest(models.Model):
+    exercise_groups = models.ForeignKey(
+        ExerciseGroup,
+        on_delete=models.CASCADE,
+        related_name="test_exercises"
+    )
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.exercise_groups.title} — {self.title}"
+
+
 class ExerciseVideo(models.Model):
-    hero = models.ForeignKey(Hero, on_delete=models.CASCADE, related_name="hero_abilities")
-    ability = models.ForeignKey(Ability, on_delete=models.CASCADE, related_name="ability_links")
+    exercise_groups = models.ForeignKey(
+        ExerciseGroup,
+        on_delete=models.CASCADE,
+        related_name="video_exercises"
+    )
+    url = models.URLField()
+    order = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ("hero", "ability")
+        ordering = ["order"]
 
     def __str__(self):
-        return f"{self.hero.name} - {self.ability.title}"
+        return f"{self.exercise_groups.title} — {self.title}"

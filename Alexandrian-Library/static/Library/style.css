@@ -1,3 +1,213 @@
-p {
-    color: purple;
+h1 {
+    color: #73f65c;
+}
+.login-form{
+    color: #415a3d;
+}
+div{
+    color: #6b9764;
+}
+.tabs{
+    color: rgb(128, 0, 0);
+}
+.tabs-inner{
+    color: rgb(206, 148, 148);
+}
+/* ===== ЗМІННІ ТЕМИ ===== */
+
+:root {
+    --bg-primary: #0f360f;
+    --bg-secondary: #091f09;
+    --accent-1: #73f65c;
+    --accent-2: #06d428;
+    --accent-3: #9fec48;
+    --text-main: #e0ffe0;
+    --text-muted: #a0d0a0;
+    --border: rgba(115, 246, 92, 0.3);
+    --card-bg: rgba(21, 48, 24, 0.8);
+    --hover-bg: rgba(115, 246, 92, 0.15);
+}
+
+[data-theme="light"] {
+    --bg-primary: #f0f9f0;
+    --bg-secondary: #e1f3e1;
+    --accent-1: #2d8a1f;
+    --accent-2: #1f6b14;
+    --accent-3: #4aa536;
+    --text-main: #1a3d1a;
+    --text-muted: #4a6b4a;
+    --border: rgba(45, 138, 31, 0.3);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --hover-bg: rgba(45, 138, 31, 0.1);
+}
+
+
+/* ===== БАЗОВІ СТИЛІ ===== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+    background-attachment: fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+
+/* ===== НАВІГАЦІЯ ===== */
+
+.navbar-custom {
+    background: var(--card-bg) !important;
+    backdrop-filter: blur(15px);
+    border-bottom: 2px solid var(--accent-1);
+    box-shadow: 0 4px 20px rgba(115, 246, 92, 0.2);
+}
+
+.navbar-brand {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--text-main) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: translateY(-2px);
+}
+
+.navbar-brand i {
+    color: var(--accent-1);
+    font-size: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.logo-text {
+    background: linear-gradient(45deg, var(--accent-1), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-link {
+    color: var(--text-main) !important;
+    font-weight: 600;
+    padding: 0.6rem 1rem !important;
+    margin: 0 0.2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: var(--hover-bg);
+    border: 1px solid transparent;
+}
+
+.nav-link:hover,
+.nav-link:focus {
+    background: var(--hover-bg);
+    border-color: var(--accent-1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(115, 246, 92, 0.3);
+}
+
+.nav-link i {
+    margin-right: 0.4rem;
+    transition: transform 0.3s ease;
+}
+
+.nav-link:hover i {
+    transform: scale(1.2);
+}
+
+.nav-link-login,
+.nav-link-profile {
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-3)) !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 0.6rem 1.5rem !important;
+}
+
+.nav-link-login:hover,
+.nav-link-profile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(115, 246, 92, 0.4);
+}
+
+.dropdown-menu {
+    background: var(--card-bg);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(115, 246, 92, 0.2);
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.dropdown-item {
+    color: var(--text-main);
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background: var(--hover-bg);
+    color: var(--accent-1);
+    transform: translateX(5px);
+}
+
+.dropdown-item i {
+    margin-right: 0.5rem;
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-divider {
+    border-color: var(--border);
+    margin: 0.5rem 0;
+}
+
+.theme-toggle {
+    background: var(--hover-bg);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--accent-1);
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+.theme-toggle:hover {
+    background: var(--accent-1);
+    color: #fff;
+    transform: rotate(180deg);
+    box-shadow: 0 4px 12px rgba(115, 246, 92, 0.4);
 }

@@ -1,0 +1,21 @@
+{% extends "Library/base.html" %} {% load widget_tweaks %} {% block title %}Реєстрація{% endblock %} {% block content %}
+<h1>Реєстрація</h1>
+
+<form class="login-form" method="post">
+    {% csrf_token %} {% for field in form %}
+    <div>
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label> {{ field|add_class:"form-control" }} {% if field.errors %}
+        <p class="error">{{ field.errors|striptags }}</p>
+        {% endif %}
+    </div>
+    {% endfor %} {% if form.non_field_errors %}
+    <div class="error">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+    <input type="submit" value="Створити акаунт">
+
+</form>
+<h2>Вже маєте акаунт? <a href="{% url 'Library:login' %}">Увійти</a></h2>
+
+{% endblock %}
