@@ -1,0 +1,121 @@
+<!-- exercise_group_view.html -->
+{% extends "Library/base.html" %}
+{% load static %}
+{% load library_filters %}
+
+{% block title %}{{ group.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'Library:course_detail' course.id %}">{{ course.title }}</a>
+    <span> / </span>
+    <span>{{ group.title }}</span>
+</div>
+
+<div class="exercise-group-page">
+    <div class="group-header">
+        <div class="group-number">{{ group.order }}</div>
+        <div>
+            <h1>{{ group.title }}</h1>
+            {% if group.description %}
+            <p>{{ group.description }}</p>
+            {% endif %}
+        </div>
+        {% if group.is_completed_by_user %}
+        <span class="badge-completed"><i class="fas fa-check"></i> Виконано</span>
+        {% endif %}
+    </div>
+
+    <div class="exercises-content">
+        {% if is_teacher %}
+        <div class="teacher-controls">
+            <a href="{% url 'Library:add_question' group.id %}" class="btn btn-sm"><i class="fas fa-plus"></i> Питання</a>
+            <a href="{% url 'Library:add_code' group.id %}" class="btn btn-sm"><i class="fas fa-plus"></i> Код</a>
+            <a href="{% url 'Library:add_video' group.id %}" class="btn btn-sm"><i class="fas fa-plus"></i> Відео</a>
+        </div>
+        {% endif %}
+        
+        {% if group.questions.all %}
+        <div class="questions-section">
+            {% for question in group.questions.all %}
+            <div class="question-card">
+                <div class="question-text">{{ question.text }}</div>
+                
+                {% if question.id in user_answers %}
+                    {% with answer=user_answers|get_item:question.id %}
+                    <div class="answer-feedback {% if answer.is_correct %}correct{% else %}incorrect{% endif %}">
+                        {% if answer.is_correct %}<i class="fas fa-check-circle"></i> Правильно!
+                        {% else %}<i class="fas fa-times-circle"></i> Неправильно{% endif %}
+                    </div>
+                    {% endwith %}
+                {% endif %}
+                
+                <form method="post" action="{% url 'Library:answer_question' question.id %}">
+                    {% csrf_token %}
+                    <div class="answer-options">
+                        {% for option in question.options.all %}
+                        <button type="submit" name="option_id" value="{{ option.id }}" class="answer-option {% if option.id == user_answers|get_item:question.id %}selected {% if option.is_correct %}correct{% else %}incorrect{% endif %}{% endif %}">
+                            <i class="far fa-circle"></i>
+                            <span>{{ option.text }}</span>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </form>
+                
+                {% if question.explanation and question.id in user_answers %}
+                <div class="explanation">
+                    <i class="fas fa-lightbulb"></i> {{ question.explanation }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if group.code_exercises.all %}
+        <div class="code-section">
+            <h3><i class="fas fa-code"></i> Код завдання</h3>
+            {% for exercise in group.code_exercises.all %}
+            <div class="exercise-card">
+                <strong>{{ exercise.title }}</strong>
+                <pre><code>{{ exercise.content }}</code></pre>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if group.video_exercises.all %}
+        <div class="video-section">
+            <h3><i class="fas fa-video"></i> Відео</h3>
+            {% for video in group.video_exercises.all %}
+            <a href="{{ video.url }}" target="_blank" class="video-link">
+                <i class="fas fa-play-circle"></i> {{ video.title }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if not is_teacher and not group.is_completed_by_user %}
+    <form method="post" action="{% url 'Library:mark_exercise_complete' group.id %}" class="complete-form">
+        {% csrf_token %}
+        <button type="submit" class="btn-complete">
+            <i class="fas fa-check-circle"></i> Виконати
+        </button>
+    </form>
+    {% endif %}
+
+    <div class="navigation-buttons">
+        {% if prev_group %}
+        <a href="{% url 'Library:exercise_group_view' prev_group.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Попередня
+        </a>
+        {% endif %}
+        {% if next_group %}
+        <a href="{% url 'Library:exercise_group_view' next_group.id %}" class="btn btn-primary">
+            Наступна <i class="fas fa-arrow-right"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

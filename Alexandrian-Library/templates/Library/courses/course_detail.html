@@ -1,0 +1,92 @@
+{% extends "Library/base.html" %}
+{% load static %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="course-visual-page">
+    <div class="course-header">
+        <h1>{{ course.title }}</h1>
+        <div class="course-meta">
+            <span><i class="fas fa-user-tie"></i> {{ course.teacher.username }}</span>
+            <span><i class="fas fa-users"></i> {{ course.enrolled_students_count }} студентів</span>
+        </div>
+        {% if not is_enrolled and not is_teacher %}
+        <a href="{% url 'Library:enroll_course' course.id %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Записатись
+        </a>
+        {% endif %}
+        {% if is_teacher %}
+        <a href="{% url 'Library:students_list' course.id %}" class="btn btn-secondary">
+            <i class="fas fa-users"></i> Студенти
+        </a>
+        {% endif %}
+    </div>
+
+    {% if is_enrolled or is_teacher %}
+    <div class="modules-visual-container">
+        {% if is_teacher %}
+        <div class="teacher-controls">
+            <a href="{% url 'Library:create_module' course.id %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Додати Модуль
+            </a>
+        </div>
+        {% endif %}
+        
+        {% for module in modules %}
+        <div class="module-section">
+            <div class="module-header">
+                <h2>{{ module.order }}. {{ module.title }}</h2>
+                <div class="module-actions">
+                    {% if not is_teacher %}
+                    <div class="module-progress">{{ module.get_completion_for_user }}%</div>
+                    {% else %}
+                    <a href="{% url 'Library:create_lesson' module.id %}" class="btn btn-sm">
+                        <i class="fas fa-plus"></i> Додати Урок
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="lessons-map">
+                {% for lesson in module.lessons.all %}
+                <div class="lesson-node">
+                    <div class="lesson-circle {% if not is_teacher %}{% if lesson.get_completion_for_user == 100 %}completed{% elif lesson.get_completion_for_user > 0 %}active{% else %}locked{% endif %}{% endif %}">
+                        <div class="lesson-icon">
+                            {% if not is_teacher %}
+                                {% if lesson.get_completion_for_user == 100 %}<i class="fas fa-check"></i>
+                                {% elif lesson.get_completion_for_user > 0 %}<i class="fas fa-book-reader"></i>
+                                {% else %}<i class="fas fa-lock"></i>{% endif %}
+                            {% else %}<i class="fas fa-book"></i>{% endif %}
+                        </div>
+                    </div>
+                    <div class="lesson-title">{{ lesson.title }}</div>
+                    
+                    <div class="exercise-groups">
+                        {% for group in lesson.exercise_groups.all %}
+                        <a href="{% url 'Library:exercise_group_view' group.id %}" 
+                           class="group-dot {% if group.is_completed_by_user %}completed{% endif %}"
+                           title="{{ group.title }}">
+                            <i class="fas {% if group.is_completed_by_user %}fa-check-circle{% else %}fa-circle{% endif %}"></i>
+                        </a>
+                        {% endfor %}
+                        {% if is_teacher %}
+                        <a href="{% url 'Library:create_exercise_group' lesson.id %}" class="group-dot add" title="Додати групу">
+                            <i class="fas fa-plus-circle"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="enrollment-notice">
+        <i class="fas fa-lock"></i>
+        <h3>Запишіться на курс для доступу</h3>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

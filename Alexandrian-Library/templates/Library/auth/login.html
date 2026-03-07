@@ -1,26 +1,49 @@
-{% extends "Library/base.html" %} {% load widget_tweaks %} {% block title %}Вхід{% endblock %} {% block content %}
+{% extends "Library/base.html" %}
+{% load widget_tweaks %}
 
-<h1>Вхід</h1>
+{% block title %}Вхід{% endblock %}
 
-<form class="login-form" method="post">
-    {% csrf_token %} {% if form.non_field_errors %}
-    <div class="error">
-        {{ form.non_field_errors }}
-    </div>
-    {% endif %}
-    <div>
-        <label for="{{ form.username.id_for_label }}">Логін</label> {{ form.username|add_class:"form-control" }} {% if form.username.errors %}
-        <p class="error">{{ form.username.errors|striptags }}</p>
+{% block content %}
+<div class="form-container">
+    <h1><i class="fas fa-sign-in-alt"></i> Вхід</h1>
+
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="error" style="margin-bottom: 20px;">
+            {{ form.non_field_errors }}
+        </div>
         {% endif %}
+        
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Логін</label>
+            {% render_field form.username class="form-input" placeholder="Введіть ваш логін" %}
+            {% if form.username.errors %}
+            <p class="error">{{ form.username.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.password.id_for_label }}">Пароль</label>
+            {% render_field form.password class="form-input" placeholder="Введіть ваш пароль" %}
+            {% if form.password.errors %}
+            <p class="error">{{ form.password.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="fas fa-sign-in-alt"></i> Увійти
+            </button>
+        </div>
+    </form>
+    
+    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--fp-border);">
+        <p style="color: var(--fp-muted);">Немає акаунта?</p>
+        <a href="{% url 'Library:register' %}" class="btn btn-secondary">
+            <i class="fas fa-user-plus"></i> Зареєструватися
+        </a>
     </div>
-    <div>
-        <label for="{{ form.password.id_for_label }}">Пароль</label> {{ form.password|add_class:"form-control" }} {% if form.password.errors %}
-        <p class="error">{{ form.password.errors|striptags }}</p>
-        {% endif %}
-    </div>
-    <input type="submit" value="Увійти">
-</form>
-<h2>Немає акаунта? <a href="{% url 'Library:register' %}">Зареєструватися</a></h2>
-
-
+</div>
 {% endblock %}

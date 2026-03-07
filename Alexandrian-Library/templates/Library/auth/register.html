@@ -1,21 +1,46 @@
-{% extends "Library/base.html" %} {% load widget_tweaks %} {% block title %}Реєстрація{% endblock %} {% block content %}
-<h1>Реєстрація</h1>
+{% extends "Library/base.html" %}
+{% load widget_tweaks %}
 
-<form class="login-form" method="post">
-    {% csrf_token %} {% for field in form %}
-    <div>
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label> {{ field|add_class:"form-control" }} {% if field.errors %}
-        <p class="error">{{ field.errors|striptags }}</p>
+{% block title %}Реєстрація{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1><i class="fas fa-user-plus"></i> Реєстрація</h1>
+
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="error" style="margin-bottom: 20px;">
+            {{ form.non_field_errors }}
+        </div>
         {% endif %}
-    </div>
-    {% endfor %} {% if form.non_field_errors %}
-    <div class="error">
-        {{ form.non_field_errors }}
-    </div>
-    {% endif %}
-    <input type="submit" value="Створити акаунт">
+        
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% render_field field class="form-input" %}
+            {% if field.help_text %}
+            <small class="form-help">{{ field.help_text|safe }}</small>
+            {% endif %}
+            {% if field.errors %}
+            <p class="error">{{ field.errors|striptags }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                <i class="fas fa-user-plus"></i> Створити акаунт
+            </button>
+        </div>
+    </form>
 
-</form>
-<h2>Вже маєте акаунт? <a href="{% url 'Library:login' %}">Увійти</a></h2>
-
+    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--fp-border);">
+        <p style="color: var(--fp-muted);">Вже маєте акаунт?</p>
+        <a href="{% url 'Library:login' %}" class="btn btn-secondary">
+            <i class="fas fa-sign-in-alt"></i> Увійти
+        </a>
+    </div>
+</div>
 {% endblock %}

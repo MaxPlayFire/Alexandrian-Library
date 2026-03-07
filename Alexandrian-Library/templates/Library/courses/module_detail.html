@@ -1,0 +1,128 @@
+{% extends "Library/base.html" %}
+{% load static %}
+
+{% block title %}{{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'Library:course_detail' course.id %}">{{ course.title }}</a>
+    <span> / </span>
+    <span>{{ module.title }}</span>
+</div>
+
+<div class="module-visual-container">
+    <div class="module-header-visual">
+        <h1>{{ module.title }}</h1>
+        {% if module.description %}
+        <p class="module-description">{{ module.description }}</p>
+        {% endif %}
+        {% if not is_teacher %}
+        <div class="overall-progress">
+            <div class="progress-circle-container">
+                <svg class="progress-ring" width="120" height="120">
+                    <circle class="progress-ring-circle-bg" stroke="#2a2f38" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                    <circle class="progress-ring-circle" stroke="#c9a86a" stroke-width="8" fill="transparent" r="52" cx="60" cy="60">
+                </svg>
+                <div class="progress-percentage">{{ completion }}%</div>
+            </div>
+            <p>Загальний прогрес</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if lessons %}
+    <div class="lessons-visual-map">
+        <svg class="connection-lines" width="100%" height="100%">
+            {% for lesson in lessons %}
+                {% if not forloop.last %}
+                <line class="lesson-connector" 
+                      x1="0" y1="0" x2="0" y2="0"
+                      data-from="lesson-{{ lesson.id }}" 
+                      data-to="lesson-{{ forloop.counter }}"/>
+                {% endif %}
+            {% endfor %}
+        </svg>
+
+        <div class="lessons-grid-visual">
+            {% for lesson in lessons %}
+            <div class="lesson-node-wrapper" id="lesson-{{ lesson.id }}" data-index="{{ forloop.counter0 }}">
+                <a href="{% url 'Library:lesson_detail' lesson.id %}" class="lesson-node
+                    {% if not is_teacher %}
+                        {% if lesson.get_completion_for_user == 100 %}completed
+                        {% elif lesson.get_completion_for_user > 0 %}in-progress
+                        {% else %}locked{% endif %}
+                    {% endif %}">
+                    
+                    <div class="lesson-circle">
+                        <div class="lesson-icon">
+                            {% if not is_teacher %}
+                                {% if lesson.get_completion_for_user == 100 %}<i class="fas fa-check"></i>
+                                {% elif lesson.get_completion_for_user > 0 %}<i class="fas fa-book-reader"></i>
+                                {% else %}<i class="fas fa-lock"></i>{% endif %}
+                            {% else %}<i class="fas fa-book"></i>{% endif %}
+                        </div>
+                    </div>
+                    <div class="lesson-title">{{ lesson.title }}</div>
+                    {% if not is_teacher %}
+                    <div class="lesson-progress-text">{{ lesson.get_completion_for_user }}%</div>
+                    {% endif %}
+                </a>
+                <div class="exercise-groups-mini">
+                    {% for group in lesson.exercise_groups.all %}
+                    <div class="exercise-group-mini {% if group.is_completed_by_user %}completed{% endif %}"
+                         title="{{ group.title }}">
+                        <i class="fas {% if group.is_completed_by_user %}fa-check-circle{% else %}fa-circle{% endif %}"></i>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-book-open"></i>
+        <h2>Уроків поки що немає</h2>
+        {% if is_teacher %}
+        <p>Додайте уроки через адмін-панель</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const svg = document.querySelector('.connection-lines');
+    if (!svg) return;
+    
+    const lines = document.querySelectorAll('.lesson-connector');
+    const lessons = document.querySelectorAll('.lesson-node-wrapper');
+    
+    function updateLines() {
+        lines.forEach((line, index) => {
+            const fromLesson = lessons[index];
+            const toLesson = lessons[index + 1];
+            
+            if (!fromLesson || !toLesson) return;
+            
+            const fromRect = fromLesson.getBoundingClientRect();
+            const toRect = toLesson.getBoundingClientRect();
+            const svgRect = svg.getBoundingClientRect();
+            
+            const x1 = fromRect.left + fromRect.width / 2 - svgRect.left;
+            const y1 = fromRect.top + fromRect.height / 2 - svgRect.top;
+            const x2 = toRect.left + toRect.width / 2 - svgRect.left;
+            const y2 = toRect.top + toRect.height / 2 - svgRect.top;
+            
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+        });
+    }
+    
+    updateLines();
+    window.addEventListener('resize', updateLines);
+});
+</script>
+{% endblock %}

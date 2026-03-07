@@ -1,0 +1,124 @@
+{% extends "Library/base.html" %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block title %}Редагувати Профіль{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h1><i class="fas fa-user-edit"></i> Редагувати Профіль</h1>
+    
+    <form method="post" enctype="multipart/form-data" class="styled-form profile-form">
+        {% csrf_token %}
+        
+        <div class="profile-preview">
+            <div class="avatar-preview">
+                {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="{{ user.username }}" id="avatar-preview" class="profile-avatar">
+                {% else %}
+                <div class="profile-avatar-placeholder" id="avatar-preview">
+                    {{ profile.avatar_letter }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+            {% render_field form.username class="form-input" %}
+            {% if form.username.errors %}
+            <p class="error">{{ form.username.errors|striptags }}</p>
+            {% endif %}
+            <small class="form-help">Це ім'я буде відображатися іншим користувачам</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.avatar.id_for_label }}">{{ form.avatar.label }}</label>
+            {% render_field form.avatar class="form-input-file" id="avatar-input" %}
+            {% if form.avatar.errors %}
+            <p class="error">{{ form.avatar.errors|striptags }}</p>
+            {% endif %}
+            <small class="form-help">Завантажте фото профілю (рекомендований розмір: 200x200px)</small>
+            {% if profile.avatar %}
+            <label class="remove-avatar">
+                <input type="checkbox" name="avatar-clear" id="avatar-clear">
+                Видалити поточну аватарку
+            </label>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.bio.id_for_label }}">{{ form.bio.label }}</label>
+            {% render_field form.bio class="form-input" %}
+            {% if form.bio.errors %}
+            <p class="error">{{ form.bio.errors|striptags }}</p>
+            {% endif %}
+            <small class="form-help">Розкажіть про себе</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+            {% render_field form.role class="form-input" %}
+            {% if form.role.errors %}
+            <p class="error">{{ form.role.errors|striptags }}</p>
+            {% endif %}
+            {% if not user.profile.is_admin %}
+            <small class="form-help">Тільки адміністратори можуть змінювати роль</small>
+            {% endif %}
+        </div>
+        
+        {% if form.non_field_errors %}
+        <div class="error">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Зберегти Зміни
+            </button>
+            <a href="{% url 'Library:profile' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Скасувати
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('avatar-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('avatar-preview');
+                if (preview.tagName === 'IMG') {
+                    preview.src = e.target.result;
+                } else {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'profile-avatar';
+                    img.id = 'avatar-preview';
+                    preview.parentNode.replaceChild(img, preview);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    const clearCheckbox = document.getElementById('avatar-clear');
+    if (clearCheckbox) {
+        clearCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                const preview = document.getElementById('avatar-preview');
+                if (preview.tagName === 'IMG') {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'profile-avatar-placeholder';
+                    placeholder.id = 'avatar-preview';
+                    placeholder.textContent = '{{ profile.avatar_letter }}';
+                    preview.parentNode.replaceChild(placeholder, preview);
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

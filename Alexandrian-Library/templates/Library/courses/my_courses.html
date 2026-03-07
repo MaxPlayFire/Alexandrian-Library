@@ -1,0 +1,75 @@
+{% extends "Library/base.html" %}
+{% load static %}
+
+{% block title %}Мої Курси{% endblock %}
+
+{% block content %}
+<div class="card-header mb-20">
+    <h1><i class="fas fa-graduation-cap"></i> Всі Курси</h1>
+    {% if user.is_authenticated and user.profile.is_teacher %}
+    <a href="{% url 'Library:create_course' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Створити Курс
+    </a>
+    {% endif %}
+</div>
+
+<div class="courses-header">
+    <h1><i class="fas fa-bookmark"></i> Мої Курси</h1>
+    <a href="{% url 'Library:course_list' %}" class="btn btn-secondary">
+        <i class="fas fa-search"></i> Знайти Ще Курси
+    </a>
+</div>
+
+{% if enrollments %}
+<div class="courses-grid">
+    {% for enrollment in enrollments %}
+    {% with course=enrollment.course %}
+    <div class="course-card">
+        <div class="course-card-header">
+            <h3>{{ course.title }}</h3>
+            <span class="badge badge-enrolled">
+                <i class="fas fa-check-circle"></i> Записано
+            </span>
+        </div>
+        
+        <div class="course-card-body">
+            <p class="course-description">{{ course.description|truncatewords:30 }}</p>
+            
+            <div class="course-meta">
+                <div class="course-teacher">
+                    <i class="fas fa-user-tie"></i>
+                    <span>{{ course.teacher.username }}</span>
+                </div>
+                <div class="course-date">
+                    <i class="fas fa-calendar"></i>
+                    <span>Записано: {{ enrollment.enrolled_at|date:"d.m.Y" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="course-card-footer">
+            <a href="{% url 'Library:course_detail' course.id %}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Продовжити
+            </a>
+            
+            <a href="{% url 'Library:unenroll_course' course.id %}" 
+               class="btn btn-danger"
+               onclick="return confirm('Ви впевнені, що хочете відписатися від курсу?')">
+                <i class="fas fa-times"></i> Відписатись
+            </a>
+        </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-book"></i>
+    <h2>Ви ще не записані на жоден курс</h2>
+    <p>Знайдіть цікавий курс і почніть навчання!</p>
+    <a href="{% url 'Library:course_list' %}" class="btn btn-primary">
+        <i class="fas fa-search"></i> Переглянути Всі Курси
+    </a>
+</div>
+{% endif %}
+{% endblock %}

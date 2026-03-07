@@ -1,0 +1,162 @@
+{% extends "Library/base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }} - Профіль{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar-section">
+            {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="{{ profile_user.username }}" class="profile-avatar">
+            {% else %}
+            <div class="profile-avatar-placeholder">
+                {{ profile.avatar_letter }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="profile-info">
+            <h1>{{ profile_user.username }}</h1>
+            <p class="profile-role">
+                <i class="fas fa-id-badge"></i>
+                <strong>{{ profile.get_role_display }}</strong>
+            </p>
+            
+            {% if profile.bio %}
+            <p class="profile-bio">{{ profile.bio }}</p>
+            {% endif %}
+            
+            {% if is_own_profile %}
+            <div class="profile-actions">
+                <a href="{% url 'Library:profile_edit' %}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Редагувати Профіль
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if profile.is_teacher and created_courses %}
+    <div class="profile-section">
+        <h2><i class="fas fa-chalkboard-teacher"></i> Створені Курси</h2>
+        <div class="courses-grid">
+            {% for course in created_courses %}
+            <div class="course-card">
+                <div class="course-card-header">
+                    <h3>{{ course.title }}</h3>
+                    {% if not course.is_published %}
+                    <span class="badge badge-draft">Чернетка</span>
+                    {% endif %}
+                </div>
+                
+                <div class="course-card-body">
+                    <p class="course-description">{{ course.description|truncatewords:20 }}</p>
+                    
+                    <div class="course-meta">
+                        <div class="course-students">
+                            <i class="fas fa-users"></i>
+                            <span>{{ course.enrolled_students_count }} студентів</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="course-card-footer">
+                    <a href="{% url 'Library:course_detail' course.id %}" class="btn btn-secondary">
+                        <i class="fas fa-eye"></i> Переглянути
+                    </a>
+                    {% if is_own_profile %}
+                    <a href="{% url 'Library:edit_course' course.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Редагувати
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if enrolled_courses %}
+    <div class="profile-section">
+        <h2><i class="fas fa-bookmark"></i> Записані Курси</h2>
+        <div class="courses-grid">
+            {% for enrollment in enrolled_courses %}
+            {% with course=enrollment.course %}
+            <div class="course-card">
+                <div class="course-card-header">
+                    <h3>{{ course.title }}</h3>
+                </div>
+                
+                <div class="course-card-body">
+                    <p class="course-description">{{ course.description|truncatewords:20 }}</p>
+                    
+                    <div class="course-meta">
+                        <div class="course-teacher">
+                            <i class="fas fa-user-tie"></i>
+                            <span>{{ course.teacher.username }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="course-card-footer">
+                    <a href="{% url 'Library:course_detail' course.id %}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Продовжити
+                    </a>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if not profile.is_teacher and not enrolled_courses %}
+    <div class="empty-state">
+        <i class="fas fa-book-open"></i>
+        <h2>{% if is_own_profile %}Ви ще не записані на жоден курс{% else %}Користувач не записаний на курси{% endif %}</h2>
+        {% if is_own_profile %}
+        <a href="{% url 'Library:course_list' %}" class="btn btn-primary">
+            <i class="fas fa-search"></i> Знайти Курси
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if certificates %}
+    <div class="profile-section">
+        <h2><i class="fas fa-certificate"></i> Сертифікати</h2>
+        <div class="courses-grid">
+            {% for cert in certificates %}
+            {% if cert.is_visible or is_own_profile %}
+            <div class="course-card">
+                <div class="course-card-header">
+                    <h3>{{ cert.course.title }}</h3>
+                </div>
+                
+                <div class="course-card-body">
+                    <p class="course-description">Бали: {{ cert.total_score }}<br>Дата: {{ cert.issued_at|date:"d.m.Y" }}</p>
+                </div>
+                
+                <div class="course-card-footer">
+                    <a href="{% url 'Library:view_certificate' cert.id %}" class="btn btn-secondary">
+                        <i class="fas fa-eye"></i> Переглянути
+                    </a>
+                    {% if is_own_profile %}
+                    <form method="post" action="{% url 'Library:toggle_certificate' cert.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <label class="checkbox-group">
+                            <input type="checkbox" name="visible" {% if cert.is_visible %}checked{% endif %} onchange="this.form.submit()">
+                            Показувати в портфоліо
+                        </label>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

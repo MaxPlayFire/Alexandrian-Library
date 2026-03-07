@@ -3,156 +3,144 @@
 <html>
 
 <head>
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}Library of Babel{% endblock %}</title>
     <link href="{% static 'Library/style.css' %}" rel="stylesheet">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
+    <link rel="icon" type="image/gif" href="{% static 'Library/logo.gif' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-
 </head>
 
 <body>
+    <header>
+        <nav>
+            <a class="brand" href="{% url 'Library:home' %}">
+                <i class="fa-solid fa-scroll"></i> Library of Babel
+            </a>
 
-    <header class="navbar-custom">
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <div class="container">
+            <ul>
+                <li>
+                    <a href="{% url 'Library:home' %}">
+                        <i class="fas fa-home"></i> Головна
+                    </a>
+                </li>
 
-                <a class="navbar-brand" href="/">
-                    <i class="fas fa-gamepad"></i>
-                    <span class="logo-text">Erebus Club</span>
-                </a>
+                <li>
+                    <a href="#"><i class="fas fa-users"></i> Спільнота</a>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-comments"></i> Форум</a></li>
+                        <li><a href="#"><i class="fas fa-poll"></i> Опитування</a></li>
+                        <li><a href="#"><i class="fas fa-bullhorn"></i> Оголошення</a></li>
+                    </ul>
+                </li>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                <li>
+                    <a href="#"><i class="fas fa-layer-group"></i> Контент</a>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-book"></i> Матеріали</a></li>
+                        <li><a href="#"><i class="fas fa-calendar-alt"></i> Події</a></li>
+                        <li><a href="#"><i class="fas fa-folder-open"></i> Портфоліо</a></li>
+                        <li><a href="#"><i class="fas fa-images"></i> Галерея</a></li>
+                    </ul>
+                </li>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/">
-                                <i class="fas fa-home"></i> Головна
-                            </a>
-                        </li>
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-users"></i> Спільнота
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" >
-                                        <i class="fas fa-comments"></i> Форум
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                        <i class="fas fa-poll"></i> Опитування
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                        <i class="fas fa-bullhorn"></i> Оголошення
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-layer-group"></i> Контент
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" >
-                                        <i class="fas fa-book"></i> Матеріали
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                        <i class="fas fa-calendar-alt"></i> Події
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                        <i class="fas fa-folder-open"></i> Портфоліо
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item">
-                                        <i class="fas fa-images"></i> Галерея
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
+                <li>
+                    <a href="#"><i class="fas fa-graduation-cap"></i> Курси</a>
+                    <ul>
+                        <li><a href="{% url 'Library:course_list' %}"><i class="fas fa-book"></i> Всі Курси</a></li>
                         {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle nav-link-profile" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle"></i>
+                        <li><a href="{% url 'Library:my_courses' %}"><i class="fa-solid fa-bookmark"></i> Мої Курси</a></li>
+                        {% if user.profile.is_teacher %}
+                        <li><a href="{% url 'Library:create_course' %}"><i class="fa-solid fa-plus"></i> Створити Курс</a></li>
+                        {% endif %}
+                        {% endif %}
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="#"><i class="fas fa-user"></i> Профіль</a>
+                    <ul>
+                        {% if user.is_authenticated %}
+                        <li>
+                            <a href="{% url 'Library:profile' %}">
+                                <i class="fas fa-user-circle"></i> Мій Профіль
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item">
-                                        <i class="fas fa-user"></i> Мій профіль
-                                    </a>
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-                                <li>
-                                    <form method="post">
-                                        {% csrf_token %}
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="fas fa-sign-out-alt" ></i> Вийти
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
+                        </li>
+                        <li>
+                            <a href="{% url 'Library:profile_edit' %}">
+                                <i class="fas fa-edit"></i> Редагувати
+                            </a>
+                        </li>
+                        <li>
+                            <form method="post" action="{% url 'Library:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit">
+                                    <i class="fas fa-sign-out-alt"></i> Вийти
+                                </button>
+                            </form>
                         </li>
                         {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-login" href="{% url 'Library:login' %}">
+                        <li>
+                            <a href="{% url 'Library:login' %}">
                                 <i class="fas fa-sign-in-alt"></i> Вхід
                             </a>
                         </li>
                         {% endif %}
-
-                        <li class="nav-item">
-                            <button id="themeToggle" class="theme-toggle">
-                                <i class="fas fa-sun"></i>
-                            </button>
-                        </li>
                     </ul>
-                </div>
-            </div>
+                </li>
+                <li>
+                    <button onclick="toggleTheme()" class="btn theme-toggle">🌓</button>
+                </li>
+            </ul>
         </nav>
     </header>
 
+    <main>
+        <div class="video-tile-bg">
+            <video autoplay muted loop playsinline src="{% static 'Library/videos/1.webm' %}"></video>
+        </div>
 
-    <main class="main-content">
-        <div class="container py-4">
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="message message-{{ message.tags }}">
+                {{ message }}
+                <button onclick="this.parentElement.remove()" class="message-close">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="content-wrapper">
             {% block content %}{% endblock %}
         </div>
     </main>
 
-    <footer class="footer-custom">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start">
-                    <p class="mb-0">
-                        <i class="fas fa-copyright"></i> Erebus Club, 2025 Logika Sc
-                    </p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <a href="https://github.com/Lolkov1ch/group_portal" target="_blank" class="footer-link">
-                        <i class="fab fa-github"></i> GitHub Repository
-                    </a>
-                </div>
-            </div>
-        </div>
+    <footer>
+        <p>
+            <i class="fas fa-copyright"></i> Library of Babel, 2026 Logika School
+        </p>
+        <a href="https://github.com/MaxPlayFire/Alexandrian-Library" target="_blank">
+            <i class="fab fa-github"></i> GitHub Repository
+        </a>
     </footer>
+
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle("light-theme");
+            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'light') {
+                document.body.classList.add('light-theme');
+            }
+        });
+
+        setTimeout(function() {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => msg.remove());
+        }, 5000);
+    </script>
 </body>
+
 </html>

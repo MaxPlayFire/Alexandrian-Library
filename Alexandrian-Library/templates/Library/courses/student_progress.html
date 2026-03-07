@@ -1,0 +1,72 @@
+{% extends "Library/base.html" %}
+
+{% block title %}Прогрес {{ student.username }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'Library:course_detail' course.id %}">{{ course.title }}</a>
+    <span> / </span>
+    <a href="{% url 'Library:course_students' course.id %}">Студенти</a>
+    <span> / </span>
+    <span>{{ student.username }}</span>
+</div>
+
+<div class="card-header mb-20">
+    <h1>{{ student.username }}</h1>
+</div>
+
+{% for mod_data in modules %}
+<div class="module-section">
+    <h2>{{ mod_data.module.order }}. {{ mod_data.module.title }}</h2>
+    
+    {% for lesson_data in mod_data.lessons %}
+    <h3 class="mt-30">{{ lesson_data.lesson.title }}</h3>
+    
+    {% for group_data in lesson_data.groups %}
+    <div class="card mb-20">
+        <div class="card-header">
+            <h4>{{ group_data.group.title }}</h4>
+            {% if group_data.is_completed %}
+            <span class="badge"><i class="fas fa-check"></i> Виконано</span>
+            {% endif %}
+        </div>
+        
+        <div class="card-body">
+            {% if group_data.answers %}
+            <h5>Відповіді на питання:</h5>
+            {% for answer in group_data.answers %}
+            <div class="question-card">
+                <div><strong>{{ answer.question.text }}</strong></div>
+                <div class="{% if answer.is_correct %}text-muted{% else %}text-danger{% endif %}">
+                    Відповідь: {{ answer.selected_option.text }}
+                    {% if answer.is_correct %}
+                    <i class="fas fa-check" style="color: var(--success);"></i>
+                    {% else %}
+                    <i class="fas fa-times" style="color: var(--danger);"></i>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+            
+            {% if group_data.grade %}
+            <div class="mt-30">
+                <strong>Оцінка:</strong> {{ group_data.grade.score }}/100
+                {% if group_data.grade.feedback %}
+                <p class="text-muted">{{ group_data.grade.feedback }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-footer">
+            <a href="{% url 'Library:grade_student' group_data.group.id student.id %}" class="btn btn-primary">
+                <i class="fas fa-star"></i> {% if group_data.grade %}Змінити оцінку{% else %}Оцінити{% endif %}
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+    {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}
