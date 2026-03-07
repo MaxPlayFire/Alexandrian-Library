@@ -1,0 +1,14 @@
+{% extends "Library/base.html" %}
+
+{% block title %}Сертифікат {{ cert.certificate_id }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Сертифікат</h1>
+    <p><strong>ID:</strong> {{ cert.certificate_id }}</p>
+    <p><strong>Студент:</strong> {{ cert.user.get_full_name|default:cert.user.username }}</p>
+    <p><strong>Курс:</strong> {{ cert.course.title }}</p>
+    <p><strong>Оцінка:</strong> {{ cert.total_score|floatformat:1 }}%</p>
+    <p><strong>Дата видачі:</strong> {{ cert.issued_at|date:"d.m.Y" }}</p>
+</div>
+{% endblock %}

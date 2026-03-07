@@ -74,7 +74,7 @@ def enroll_course(request, course_id):
     course = get_object_or_404(Course, id=course_id, is_published=True)
     Enrollment.objects.get_or_create(user=request.user, course=course, defaults={'status': 'enrolled'})
     messages.success(request, 'Ви записалися на курс')
-    return redirect('Library/courses:course_detail', course_id=course.id)
+    return redirect('Library:course_detail', course_id=course.id)
 
 
 @login_required
@@ -82,7 +82,7 @@ def unenroll_course(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     Enrollment.objects.filter(user=request.user, course=course).delete()
     messages.success(request, 'Ви відписалися від курсу')
-    return redirect('Library/courses:my_courses')
+    return redirect('Library:my_courses')
 
 
 @login_required
@@ -95,7 +95,7 @@ def create_module(request, course_id):
             module.course = course
             module.save()
             messages.success(request, 'Модуль створено')
-            return redirect('Library/courses:course_detail', course_id=course.id)
+            return redirect('Library:course_detail', course_id=course.id)
     else:
         form = ModuleForm()
     return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Додати Модуль'})
@@ -114,7 +114,7 @@ def create_lesson(request, module_id):
             lesson.module = module
             lesson.save()
             messages.success(request, 'Урок створено')
-            return redirect('Library/courses:course_detail', course_id=module.course.id)
+            return redirect('Library:course_detail', course_id=module.course.id)
     else:
         form = LessonForm()
     return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Додати Урок'})
@@ -133,7 +133,7 @@ def create_exercise_group(request, lesson_id):
             group.lesson = lesson
             group.save()
             messages.success(request, 'Групу вправ створено')
-            return redirect('Library/courses:course_detail', course_id=lesson.module.course.id)
+            return redirect('Library:course_detail', course_id=lesson.module.course.id)
     else:
         form = ExerciseGroupForm()
     return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Додати Групу Вправ'})
@@ -153,10 +153,10 @@ def add_question(request, group_id):
             question.save()
             form.save_m2m() 
             messages.success(request, 'Питання додано')
-            return redirect('Library/courses:exercise_group_view', group_id=group.id)
+            return redirect('Library:exercise_group_view', group_id=group.id)
     else:
         form = QuestionForm()
-    return render(request, 'Library/form.html', {'form': form, 'title': 'Додати Питання'})
+    return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Додати Питання'})
 
 
 @login_required
@@ -172,7 +172,7 @@ def add_code(request, group_id):
             code.exercise_group = group
             code.save()
             messages.success(request, 'Код вправу додано')
-            return redirect('Library/courses:exercise_group_view', group_id=group.id)
+            return redirect('Library:exercise_group_view', group_id=group.id)
     else:
         form = ExerciseCodeForm()
     return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Додати Код Вправу'})
@@ -183,7 +183,7 @@ def add_video(request, group_id):
     group = get_object_or_404(ExerciseGroup, id=group_id)
     if group.lesson.module.course.teacher != request.user:
         messages.error(request, 'Доступ заборонено')
-        return redirect('Library/courses:home')
+        return redirect('Library:home')
     if request.method == 'POST':
         form = ExerciseVideoForm(request.POST)
         if form.is_valid():
@@ -191,7 +191,7 @@ def add_video(request, group_id):
             video.exercise_group = group
             video.save()
             messages.success(request, 'Відео додано')
-            return redirect('Library/courses:exercise_group_view', group_id=group.id)
+            return redirect('Library:exercise_group_view', group_id=group.id)
     else:
         form = ExerciseVideoForm()
     return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Додати Відео'})
@@ -230,7 +230,7 @@ def mark_exercise_complete(request, exercise_group_id):
             course_grade.grade = course_grade.auto_calculate_grade()
             course_grade.save()
             messages.success(request, 'Курс завершено! Чекайте на оцінку від викладача.')
-    return redirect('Library/courses:exercise_group_view', group_id=group.id)
+    return redirect('Library:exercise_group_view', group_id=group.id)
 
 
 @login_required
@@ -238,15 +238,15 @@ def answer_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
     option_id = request.POST.get('option_id')
     if not option_id:
-        return redirect('Library/courses:exercise_group_view', group_id=question.exercise_group.id)
-    
+        return redirect('Library:exercise_group_view', group_id=question.exercise_group.id)
+
     option = get_object_or_404(QuestionOption, id=option_id, question=question)
     if not Enrollment.objects.filter(user=request.user, course=question.exercise_group.lesson.module.course, status='enrolled').exists():
         return redirect('Library:home')
-    
+
     UserAnswer.objects.update_or_create(user=request.user, question=question, defaults={'selected_option': option})
     messages.success(request, '✓ Правильно!' if option.is_correct else '✗ Неправильно')
-    return redirect('Library/courses:exercise_group_view', group_id=question.exercise_group.id)
+    return redirect('Library:exercise_group_view', group_id=question.exercise_group.id)
 
 
 @login_required
@@ -308,7 +308,7 @@ def students_list(request, course_id):
             'avg_score': int(avg_score),
             'course_grade': course_grade
         })
-    return render(request, 'Library/students.html', {'course': course, 'students': students})
+    return render(request, 'Library/courses/students.html', {'course': course, 'students': students})
 
 
 @login_required
@@ -333,7 +333,7 @@ def student_work(request, course_id, user_id):
                 })
             lessons.append({'lesson': lesson, 'groups': groups})
         modules.append({'module': module, 'lessons': lessons})
-    return render(request, 'Library/student_progress.html', {'course': course, 'student': student, 'modules': modules})
+    return render(request, 'Library/courses/student_progress.html', {'course': course, 'student': student, 'modules': modules})
 
 
 @login_required
@@ -353,7 +353,7 @@ def grade_student(request, group_id, user_id):
             return redirect('Library:student_progress', course_id=course.id, user_id=student.id)
     else:
         form = GradeForm(instance=grade)
-    return render(request, 'Library/form.html', {'form': form, 'title': f'Оцінити: {group.title}'})
+    return render(request, 'Library/courses/form.html', {'form': form, 'title': f'Оцінити: {group.title}'})
 
 
 @login_required
@@ -376,7 +376,7 @@ def grade_course(request, course_id, user_id):
             return redirect('Library:students_list', course_id=course.id)
     else:
         form = CourseGradeForm(instance=course_grade)
-    return render(request, 'Library/form.html', {'form': form, 'title': 'Оцінити курс'})
+    return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Оцінити курс'})
 
 
 @login_required
