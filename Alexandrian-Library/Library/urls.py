@@ -49,4 +49,11 @@ urlpatterns = [
     path("profile/", views.profile_view, name="profile"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),
     path("profile/<str:username>/", views.profile_view, name="profile_view"),
+    
+    path("modules/<int:module_id>/toggle/", views.toggle_module, name="toggle_module"),
+    path("lessons/<int:lesson_id>/toggle/", views.toggle_lesson, name="toggle_lesson"),
+    
+    # Портфоліо
+    path("profile/portfolio/add/", views.add_portfolio_project, name="add_portfolio_project"),
+    path("profile/portfolio/<int:project_id>/delete/", views.delete_portfolio_project, name="delete_portfolio_project"),
 ]

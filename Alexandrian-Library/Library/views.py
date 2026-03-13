@@ -222,15 +222,23 @@ def mark_exercise_complete(request, exercise_group_id):
     if Enrollment.objects.filter(user=request.user, course=course, status='enrolled').exists():
         ExerciseGroupCompletion.objects.get_or_create(user=request.user, exercise_group=group)
         messages.success(request, 'Вправу позначено як виконану')
-        # Check if course completed
         total_groups = ExerciseGroup.objects.filter(lesson__module__course=course).count()
         completed_groups = ExerciseGroupCompletion.objects.filter(user=request.user, exercise_group__lesson__module__course=course).count()
         if completed_groups == total_groups:
             course_grade, created = CourseGrade.objects.get_or_create(user=request.user, course=course)
             course_grade.grade = course_grade.auto_calculate_grade()
             course_grade.save()
-            messages.success(request, 'Курс завершено! Чекайте на оцінку від викладача.')
-    return redirect('Library:exercise_group_view', group_id=group.id)
+
+            if not Certificate.objects.filter(user=request.user, course=course).exists():
+                Certificate.objects.create(
+                    user=request.user,
+                    course=course,
+                    total_score=course_grade.grade
+                )
+                course_grade.certificate_issued = True
+                course_grade.save()
+                messages.success(request, '🎉 Курс завершено! Сертифікат автоматично видано.')
+        return redirect('Library:exercise_group_view', group_id=group.id)
 
 
 @login_required
@@ -395,3 +403,48 @@ def toggle_certificate(request, cert_id):
         cert.is_visible = 'visible' in request.POST
         cert.save()
     return redirect('Library:profile')
+@login_required
+def toggle_module(request, module_id):
+    module = get_object_or_404(Module, id=module_id)
+    if module.course.teacher != request.user:
+        messages.error(request, 'Доступ заборонено')
+        return redirect('Library:home')
+    module.is_open = not module.is_open
+    module.save()
+    status = "відкрито" if module.is_open else "закрито"
+    messages.success(request, f'Модуль {status}')
+    return redirect('Library:course_detail', course_id=module.course.id)
+
+@login_required
+def toggle_lesson(request, lesson_id):
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    if lesson.module.course.teacher != request.user:
+        messages.error(request, 'Доступ заборонено')
+        return redirect('Library:home')
+    lesson.is_open = not lesson.is_open
+    lesson.save()
+    status = "відкрито" if lesson.is_open else "закрито"
+    messages.success(request, f'Урок {status}')
+    return redirect('Library:course_detail', course_id=lesson.module.course.id)
+
+# === Портфоліо ===
+@login_required
+def add_portfolio_project(request):
+    if request.method == 'POST':
+        form = PortfolioProjectForm(request.POST)
+        if form.is_valid():
+            project = form.save(commit=False)
+            project.user = request.user
+            project.save()
+            messages.success(request, 'Проєкт додано в портфоліо!')
+            return redirect('Library:profile_view', username=request.user.username)
+    else:
+        form = PortfolioProjectForm()
+    return render(request, 'Library/profile/portfolio_form.html', {'form': form})  # створимо шаблон нижче
+
+@login_required
+def delete_portfolio_project(request, project_id):
+    project = get_object_or_404(PortfolioProject, id=project_id, user=request.user)
+    project.delete()
+    messages.success(request, 'Проєкт видалено')
+    return redirect('Library:profile_view', username=request.user.username)

@@ -24,24 +24,8 @@
                 </li>
 
                 <li>
-                    <a href="#"><i class="fas fa-users"></i> Спільнота</a>
-                    <ul>
-                        <li><a href="#"><i class="fas fa-comments"></i> Форум</a></li>
-                        <li><a href="#"><i class="fas fa-poll"></i> Опитування</a></li>
-                        <li><a href="#"><i class="fas fa-bullhorn"></i> Оголошення</a></li>
-                    </ul>
+                    <a href="#"><i class="fas fa-bullhorn"></i> Оголошення</a>
                 </li>
-
-                <li>
-                    <a href="#"><i class="fas fa-layer-group"></i> Контент</a>
-                    <ul>
-                        <li><a href="#"><i class="fas fa-book"></i> Матеріали</a></li>
-                        <li><a href="#"><i class="fas fa-calendar-alt"></i> Події</a></li>
-                        <li><a href="#"><i class="fas fa-folder-open"></i> Портфоліо</a></li>
-                        <li><a href="#"><i class="fas fa-images"></i> Галерея</a></li>
-                    </ul>
-                </li>
-
                 <li>
                     <a href="#"><i class="fas fa-graduation-cap"></i> Курси</a>
                     <ul>
@@ -56,33 +40,33 @@
                 </li>
 
                 <li>
-                    <a href="#"><i class="fas fa-user"></i> Профіль</a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'Library:profile' %}" class="nav-user">
+                        {% if user.profile.avatar %}
+                            <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}">
+                        {% else %}
+                            <span class="profile-avatar-placeholder">{{ user.profile.avatar_letter }}</span>
+                        {% endif %}
+                        <span>{{ user.username }}</span>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'Library:login' %}">
+                        <i class="fas fa-sign-in-alt"></i> Ввійти
+                    </a>
+                    {% endif %}
+                    
                     <ul>
                         {% if user.is_authenticated %}
-                        <li>
-                            <a href="{% url 'Library:profile' %}">
-                                <i class="fas fa-user-circle"></i> Мій Профіль
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'Library:profile_edit' %}">
-                                <i class="fas fa-edit"></i> Редагувати
-                            </a>
-                        </li>
+                        <li><a href="{% url 'Library:profile' %}"><i class="fas fa-user-circle"></i> Мій профіль</a></li>
+                        <li><a href="{% url 'Library:profile_edit' %}"><i class="fas fa-edit"></i> Редагувати</a></li>
                         <li>
                             <form method="post" action="{% url 'Library:logout' %}">
                                 {% csrf_token %}
-                                <button type="submit">
-                                    <i class="fas fa-sign-out-alt"></i> Вийти
-                                </button>
+                                <button type="submit"><i class="fas fa-sign-out-alt"></i> Вийти</button>
                             </form>
                         </li>
                         {% else %}
-                        <li>
-                            <a href="{% url 'Library:login' %}">
-                                <i class="fas fa-sign-in-alt"></i> Вхід
-                            </a>
-                        </li>
+                        <li><a href="{% url 'Library:register' %}"><i class="fas fa-user-plus"></i> Реєстрація</a></li>
                         {% endif %}
                     </ul>
                 </li>

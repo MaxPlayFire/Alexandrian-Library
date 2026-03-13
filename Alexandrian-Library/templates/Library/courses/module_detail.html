@@ -4,14 +4,14 @@
 {% block title %}{{ module.title }}{% endblock %}
 
 {% block content %}
-<div class="breadcrumb">
+<div class="card">
     <a href="{% url 'Library:course_detail' course.id %}">{{ course.title }}</a>
     <span> / </span>
     <span>{{ module.title }}</span>
 </div>
 
-<div class="module-visual-container">
-    <div class="module-header-visual">
+<div class="card">
+    <div class="card">
         <h1>{{ module.title }}</h1>
         {% if module.description %}
         <p class="module-description">{{ module.description }}</p>

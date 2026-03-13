@@ -1,7 +1,7 @@
 # forms.py
 from django import forms
 from django.contrib.auth.models import User
-from .models import Profile, Course, Module, Lesson, ExerciseGroup, Question, QuestionOption, ExerciseCode, ExerciseVideo, Grade, CourseGrade
+from .models import Profile, Course, Module, Lesson, ExerciseGroup, Question, QuestionOption, ExerciseCode, ExerciseVideo, Grade, CourseGrade, PortfolioProject
 
 
 class ProfileForm(forms.ModelForm):
@@ -117,3 +117,16 @@ class CourseGradeForm(forms.ModelForm):
         fields = ['grade', 'comment']
         labels = {'grade': 'Оцінка (0-100)', 'comment': 'Коментар'}
         widgets = {'comment': forms.Textarea(attrs={'rows': 4})}
+
+class PortfolioProjectForm(forms.ModelForm):
+    class Meta:
+        model = PortfolioProject
+        fields = ['title', 'url', 'description']
+        labels = {
+            'title': 'Назва проєкту',
+            'url': 'Посилання (GitHub)',
+            'description': 'Опис'
+        }
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3})
+        }

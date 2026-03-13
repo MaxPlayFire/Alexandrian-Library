@@ -4,8 +4,13 @@
 {% block title %}Мої Курси{% endblock %}
 
 {% block content %}
+
+
 <div class="card-header mb-20">
-    <h1><i class="fas fa-graduation-cap"></i> Всі Курси</h1>
+    <h1><i class="fas fa-bookmark"></i> Мої Курси</h1>
+    <a href="{% url 'Library:course_list' %}" class="btn btn-secondary">
+        <i class="fas fa-search"></i> Знайти Ще Курси
+    </a>
     {% if user.is_authenticated and user.profile.is_teacher %}
     <a href="{% url 'Library:create_course' %}" class="btn btn-primary">
         <i class="fa-solid fa-plus"></i> Створити Курс
@@ -13,29 +18,22 @@
     {% endif %}
 </div>
 
-<div class="courses-header">
-    <h1><i class="fas fa-bookmark"></i> Мої Курси</h1>
-    <a href="{% url 'Library:course_list' %}" class="btn btn-secondary">
-        <i class="fas fa-search"></i> Знайти Ще Курси
-    </a>
-</div>
-
 {% if enrollments %}
-<div class="courses-grid">
+<div class="grid grid-2 ">
     {% for enrollment in enrollments %}
     {% with course=enrollment.course %}
-    <div class="course-card">
-        <div class="course-card-header">
+    <div class="card">
+        <div class="card-header">
             <h3>{{ course.title }}</h3>
-            <span class="badge badge-enrolled">
+            <span class="badge">
                 <i class="fas fa-check-circle"></i> Записано
             </span>
         </div>
         
-        <div class="course-card-body">
-            <p class="course-description">{{ course.description|truncatewords:30 }}</p>
+        <div class="card-body">
+            <p class="text-muted">{{ course.description|truncatewords:30 }}</p>
             
-            <div class="course-meta">
+            <div class="course-meta mt-30">
                 <div class="course-teacher">
                     <i class="fas fa-user-tie"></i>
                     <span>{{ course.teacher.username }}</span>
@@ -47,7 +45,7 @@
             </div>
         </div>
         
-        <div class="course-card-footer">
+        <div class="card-footer">
             <a href="{% url 'Library:course_detail' course.id %}" class="btn btn-primary">
                 <i class="fas fa-play"></i> Продовжити
             </a>

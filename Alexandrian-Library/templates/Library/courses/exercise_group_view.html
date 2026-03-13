@@ -6,13 +6,12 @@
 {% block title %}{{ group.title }}{% endblock %}
 
 {% block content %}
-<div class="breadcrumb">
+
+<div class="card mt-20">
     <a href="{% url 'Library:course_detail' course.id %}">{{ course.title }}</a>
     <span> / </span>
     <span>{{ group.title }}</span>
-</div>
 
-<div class="exercise-group-page">
     <div class="group-header">
         <div class="group-number">{{ group.order }}</div>
         <div>
@@ -99,9 +98,10 @@
     {% if not is_teacher and not group.is_completed_by_user %}
     <form method="post" action="{% url 'Library:mark_exercise_complete' group.id %}" class="complete-form">
         {% csrf_token %}
-        <button type="submit" class="btn-complete">
-            <i class="fas fa-check-circle"></i> Виконати
-        </button>
+        <label class="complete-toggle">
+            <input type="checkbox" name="complete" onchange="this.form.submit()">
+            <span>Позначити групу як виконану</span>
+        </label>
     </form>
     {% endif %}
 

@@ -42,15 +42,15 @@
         <h2><i class="fas fa-chalkboard-teacher"></i> Створені Курси</h2>
         <div class="courses-grid">
             {% for course in created_courses %}
-            <div class="course-card">
-                <div class="course-card-header">
+            <div class="card">
+                <div class="card-header">
                     <h3>{{ course.title }}</h3>
                     {% if not course.is_published %}
                     <span class="badge badge-draft">Чернетка</span>
                     {% endif %}
                 </div>
                 
-                <div class="course-card-body">
+                <div class="card-body">
                     <p class="course-description">{{ course.description|truncatewords:20 }}</p>
                     
                     <div class="course-meta">
@@ -61,7 +61,7 @@
                     </div>
                 </div>
                 
-                <div class="course-card-footer">
+                <div class="card-footer">
                     <a href="{% url 'Library:course_detail' course.id %}" class="btn btn-secondary">
                         <i class="fas fa-eye"></i> Переглянути
                     </a>
@@ -83,12 +83,12 @@
         <div class="courses-grid">
             {% for enrollment in enrolled_courses %}
             {% with course=enrollment.course %}
-            <div class="course-card">
-                <div class="course-card-header">
+            <div class="card">
+                <div class="card-header">
                     <h3>{{ course.title }}</h3>
                 </div>
                 
-                <div class="course-card-body">
+                <div class="card-body">
                     <p class="course-description">{{ course.description|truncatewords:20 }}</p>
                     
                     <div class="course-meta">
@@ -99,7 +99,7 @@
                     </div>
                 </div>
                 
-                <div class="course-card-footer">
+                <div class="card-footer">
                     <a href="{% url 'Library:course_detail' course.id %}" class="btn btn-primary">
                         <i class="fas fa-play"></i> Продовжити
                     </a>
@@ -124,39 +124,98 @@
     {% endif %}
 
     {% if certificates %}
-    <div class="profile-section">
-        <h2><i class="fas fa-certificate"></i> Сертифікати</h2>
-        <div class="courses-grid">
-            {% for cert in certificates %}
-            {% if cert.is_visible or is_own_profile %}
-            <div class="course-card">
-                <div class="course-card-header">
-                    <h3>{{ cert.course.title }}</h3>
-                </div>
-                
-                <div class="course-card-body">
-                    <p class="course-description">Бали: {{ cert.total_score }}<br>Дата: {{ cert.issued_at|date:"d.m.Y" }}</p>
-                </div>
-                
-                <div class="course-card-footer">
-                    <a href="{% url 'Library:view_certificate' cert.id %}" class="btn btn-secondary">
-                        <i class="fas fa-eye"></i> Переглянути
-                    </a>
-                    {% if is_own_profile %}
-                    <form method="post" action="{% url 'Library:toggle_certificate' cert.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <label class="checkbox-group">
-                            <input type="checkbox" name="visible" {% if cert.is_visible %}checked{% endif %} onchange="this.form.submit()">
-                            Показувати в портфоліо
-                        </label>
-                    </form>
-                    {% endif %}
-                </div>
+<div class="card">
+    <h2><i class="fas fa-folder-open"></i> Портфоліо</h2>
+    
+    <!-- Проєкти -->
+    {% if profile_user.portfolio_projects.all %}
+    <div class="courses-grid">
+        {% for project in profile_user.portfolio_projects.all %}
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ project.title }}</h3>
+            </div>
+            <div class="card-body">
+                <a href="{{ project.url }}" target="_blank" style="color:var(--accent); font-weight:500;">
+                    <i class="fab fa-github"></i> {{ project.url|truncatechars:50 }}
+                </a>
+                {% if project.description %}
+                <p class="mt-10">{{ project.description }}</p>
+                {% endif %}
+            </div>
+            {% if is_own_profile %}
+            <div class="card-footer">
+                <form method="post" action="{% url 'Library:delete_portfolio_project' project.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" 
+                            onclick="return confirm('Видалити проєкт?')">
+                        <i class="fas fa-trash"></i> Видалити
+                    </button>
+                </form>
             </div>
             {% endif %}
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
+    {% endif %}
+
+    <!-- Сертифікати (частина портфоліо) -->
+    {% if certificates %}
+    <h3 style="margin: 40px 0 20px 0; border-top: 1px solid var(--border); padding-top: 20px;">
+        <i class="fas fa-certificate"></i> Сертифікати
+    </h3>
+    <div class="courses-grid">
+        {% for cert in certificates %}
+        {% if cert.is_visible or is_own_profile %}
+        <div class="card">
+            <div class="card-header">
+                <h3>{{ cert.course.title }}</h3>
+                <span class="badge badge-enrolled">CERT-{{ cert.certificate_id|slice:5 }}</span>
+            </div>
+            <div class="card-body">
+                <p><strong>Оцінка:</strong> {{ cert.total_score|floatformat:1 }}%</p>
+                <p class="text-muted">Видано: {{ cert.issued_at|date:"d.m.Y" }}</p>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'Library:view_certificate' cert.id %}" class="btn btn-secondary">
+                    <i class="fas fa-eye"></i> Переглянути
+                </a>
+                
+                {% if is_own_profile %}
+                <form method="post" action="{% url 'Library:toggle_certificate' cert.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <label class="checkbox-group" style="margin-left:10px;">
+                        <input type="checkbox" name="visible" 
+                               {% if cert.is_visible %}checked{% endif %} 
+                               onchange="this.form.submit()">
+                        Показувати в портфоліо
+                    </label>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if is_own_profile %}
+    <div style="text-align:center; margin-top:30px;">
+        <a href="{% url 'Library:add_portfolio_project' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Додати проєкт у портфоліо
+        </a>
+    </div>
+    {% endif %}
+
+    {% if not profile_user.portfolio_projects.all and not certificates %}
+    <div class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        <h3>Портфоліо порожнє</h3>
+        {% if is_own_profile %}
+        <p>Додайте проєкти та зробіть сертифікати видимими</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
     {% endif %}
 </div>
 {% endblock %}

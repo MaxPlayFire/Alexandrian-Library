@@ -99,7 +99,7 @@ class Module(models.Model):
     description = models.TextField(blank=True, verbose_name='Опис')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='modules', verbose_name='Курс')
     order = models.PositiveIntegerField(default=1, verbose_name='Порядок')
-    
+    is_open = models.BooleanField(default=True, verbose_name='Відкритий для учнів')
     class Meta:
         ordering = ['order']
         verbose_name = 'Модуль'
@@ -121,7 +121,7 @@ class Lesson(models.Model):
     content = models.TextField(blank=True, verbose_name='Матеріал уроку')
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='lessons', verbose_name='Модуль')
     order = models.PositiveIntegerField(default=1, verbose_name='Порядок')
-    
+    is_open = models.BooleanField(default=True, verbose_name='Відкритий для учнів')
     class Meta:
         ordering = ['order']
         verbose_name = 'Урок'
@@ -328,3 +328,18 @@ class Grade(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.exercise_group.title}: {self.score}"
+    
+class PortfolioProject(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='portfolio_projects')
+    title = models.CharField(max_length=200, verbose_name='Назва проєкту')
+    url = models.URLField(verbose_name='Посилання (GitHub тощо)')
+    description = models.TextField(blank=True, verbose_name='Короткий опис')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Проєкт у портфоліо'
+        verbose_name_plural = 'Проєкти у портфоліо'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"

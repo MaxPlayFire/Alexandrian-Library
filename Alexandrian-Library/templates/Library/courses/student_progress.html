@@ -6,7 +6,7 @@
 <div class="breadcrumb">
     <a href="{% url 'Library:course_detail' course.id %}">{{ course.title }}</a>
     <span> / </span>
-    <a href="{% url 'Library:course_students' course.id %}">Студенти</a>
+    <a href="{% url 'Library:students_list' course.id %}">Студенти</a>
     <span> / </span>
     <span>{{ student.username }}</span>
 </div>

@@ -1,10 +1,11 @@
 {% extends "Library/base.html" %}
 {% load static %}
+{% load library_filters %}
 
 {% block title %}{{ course.title }}{% endblock %}
 
 {% block content %}
-<div class="course-visual-page">
+<div class="card">
     <div class="course-header">
         <h1>{{ course.title }}</h1>
         <div class="course-meta">
@@ -34,53 +35,72 @@
         {% endif %}
         
         {% for module in modules %}
-        <div class="module-section">
-            <div class="module-header">
-                <h2>{{ module.order }}. {{ module.title }}</h2>
-                <div class="module-actions">
+<div class="module-section">
+    <div class="module-header">
+        <h2>{{ module.order }}. {{ module.title }}</h2>
+        
+        <div class="module-actions">
+            {% if not is_teacher %}
+            <div class="module-progress">{{ module|completion_for_user:request.user }}%</div>
+            {% else %}
+            <a href="{% url 'Library:create_lesson' module.id %}" class="btn btn-sm">
+                <i class="fas fa-plus"></i> Додати Урок
+            </a>
+            
+            <a href="{% url 'Library:toggle_module' module.id %}" 
+               class="btn btn-sm" style="margin-left: 8px;">
+                {% if module.is_open %}🔓 Закрити модуль{% else %}🔒 Відкрити модуль{% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="lessons-map">
+        {% for lesson in module.lessons.all %}
+        <div class="lesson-node">
+            <div class="lesson-circle 
+                {% if not is_teacher %}
+                    {% if lesson|completion_for_user:request.user == 100 %}completed
+                    {% elif lesson|completion_for_user:request.user > 0 %}active
+                    {% else %}locked{% endif %}
+                {% endif %}">
+                <div class="lesson-icon">
                     {% if not is_teacher %}
-                    <div class="module-progress">{{ module.get_completion_for_user }}%</div>
-                    {% else %}
-                    <a href="{% url 'Library:create_lesson' module.id %}" class="btn btn-sm">
-                        <i class="fas fa-plus"></i> Додати Урок
-                    </a>
-                    {% endif %}
+                        {% if lesson|completion_for_user:request.user == 100 %}<i class="fas fa-check"></i>
+                        {% elif lesson|completion_for_user:request.user > 0 %}<i class="fas fa-book-reader"></i>
+                        {% else %}<i class="fas fa-lock"></i>{% endif %}
+                    {% else %}<i class="fas fa-book"></i>{% endif %}
                 </div>
             </div>
-
-            <div class="lessons-map">
-                {% for lesson in module.lessons.all %}
-                <div class="lesson-node">
-                    <div class="lesson-circle {% if not is_teacher %}{% if lesson.get_completion_for_user == 100 %}completed{% elif lesson.get_completion_for_user > 0 %}active{% else %}locked{% endif %}{% endif %}">
-                        <div class="lesson-icon">
-                            {% if not is_teacher %}
-                                {% if lesson.get_completion_for_user == 100 %}<i class="fas fa-check"></i>
-                                {% elif lesson.get_completion_for_user > 0 %}<i class="fas fa-book-reader"></i>
-                                {% else %}<i class="fas fa-lock"></i>{% endif %}
-                            {% else %}<i class="fas fa-book"></i>{% endif %}
-                        </div>
-                    </div>
-                    <div class="lesson-title">{{ lesson.title }}</div>
-                    
-                    <div class="exercise-groups">
-                        {% for group in lesson.exercise_groups.all %}
-                        <a href="{% url 'Library:exercise_group_view' group.id %}" 
-                           class="group-dot {% if group.is_completed_by_user %}completed{% endif %}"
-                           title="{{ group.title }}">
-                            <i class="fas {% if group.is_completed_by_user %}fa-check-circle{% else %}fa-circle{% endif %}"></i>
-                        </a>
-                        {% endfor %}
-                        {% if is_teacher %}
-                        <a href="{% url 'Library:create_exercise_group' lesson.id %}" class="group-dot add" title="Додати групу">
-                            <i class="fas fa-plus-circle"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
+            
+            <div class="lesson-title">{{ lesson.title }}</div>
+            
+            {% if is_teacher %}
+            <a href="{% url 'Library:toggle_lesson' lesson.id %}" 
+               class="btn btn-sm" style="font-size:12px; margin-left: 10px;">
+                {% if lesson.is_open %}🔓{% else %}🔒{% endif %}
+            </a>
+            {% endif %}
+            
+            <div class="exercise-groups">
+                {% for group in lesson.exercise_groups.all %}
+                <a href="{% url 'Library:exercise_group_view' group.id %}" 
+                   class="group-dot {% if group.is_completed_by_user %}completed{% endif %}"
+                   title="{{ group.title }}">
+                    <i class="fas {% if group.is_completed_by_user %}fa-check-circle{% else %}fa-circle{% endif %}"></i>
+                </a>
                 {% endfor %}
+                {% if is_teacher %}
+                <a href="{% url 'Library:create_exercise_group' lesson.id %}" class="group-dot add">
+                    <i class="fas fa-plus-circle"></i>
+                </a>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
+    </div>
+</div>
+{% endfor %}
     </div>
     {% else %}
     <div class="enrollment-notice">

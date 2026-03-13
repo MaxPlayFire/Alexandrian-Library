@@ -7,6 +7,14 @@
 
 
 {% if courses %}
+<div class="card-header mb-20">
+    <h1><i class="fas fa-graduation-cap"></i> Всі Курси</h1>
+    {% if user.is_authenticated and user.profile.is_teacher %}
+    <a href="{% url 'Library:create_course' %}" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Створити Курс
+    </a>
+    {% endif %}
+</div>
 <div class="grid grid-2">
     {% for course in courses %}
     <div class="card">
