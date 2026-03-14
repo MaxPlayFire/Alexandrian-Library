@@ -24,15 +24,16 @@
         {% endif %}
     </div>
 
-    {% if is_enrolled or is_teacher %}
-    <div class="modules-visual-container">
-        {% if is_teacher %}
-        <div class="teacher-controls">
-            <a href="{% url 'Library:create_module' course.id %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Додати Модуль
-            </a>
-        </div>
-        {% endif %}
+{% if is_enrolled or is_teacher %}
+    {% if is_completed %}
+    <div class="card" style="background: rgba(76,175,80,0.15); border-color: var(--success);">
+        <h2 style="color:var(--success);"><i class="fas fa-trophy"></i> Курс успішно завершено!</h2>
+        <p>Вітаємо! Ви отримали сертифікат.</p>
+        <a href="{% url 'Library:profile' %}" class="btn btn-primary">
+            <i class="fas fa-certificate"></i> Переглянути сертифікат у профілі
+        </a>
+    </div>
+    {% endif %}
         
 {% for module in modules %}
     {% if is_teacher or module.is_open %}

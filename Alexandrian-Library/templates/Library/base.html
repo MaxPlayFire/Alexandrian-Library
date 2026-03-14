@@ -13,7 +13,7 @@
     <header>
         <nav>
             <a class="brand" href="{% url 'Library:home' %}">
-                <i class="fa-solid fa-scroll"></i> Library of Babel
+                <img src="{% static 'Library/logo.gif' %}" style="max-height: 32px;"> Library of Babel
             </a>
 
             <ul>
@@ -68,7 +68,7 @@
                     </ul>
                 </li>
                 <li>
-                    <button onclick="toggleTheme()" class="btn theme-toggle">🌓</button>
+                    <button id="themeToggle" class="btn theme-toggle">◑</button>
                 </li>
             </ul>
         </nav>
@@ -104,16 +104,26 @@
         </a>
     </footer>
 
-    <script>
-        function toggleTheme() {
-            document.body.classList.toggle("light-theme");
-            localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+<script>
+        const btn = document.getElementById("themeToggle");
+        const savedTheme = localStorage.getItem("theme");
+
+        if (savedTheme === "light") {
+            document.body.setAttribute("data-theme", "light");
+            btn.innerHTML = "🌙";
+        } else {
+            btn.innerHTML = "☀️";
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const theme = localStorage.getItem('theme');
-            if (theme === 'light') {
-                document.body.classList.add('light-theme');
+        btn.addEventListener("click", () => {
+            if (document.body.getAttribute("data-theme") === "light") {
+                document.body.removeAttribute("data-theme");
+                localStorage.setItem("theme", "dark");
+                btn.innerHTML = "☀️";
+            } else {
+                document.body.setAttribute("data-theme", "light");
+                localStorage.setItem("theme", "light");
+                btn.innerHTML = "🌙";
             }
         });
 

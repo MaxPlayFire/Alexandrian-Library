@@ -24,18 +24,26 @@ def menu(request):
 def my_courses(request):
     enrollments = Enrollment.objects.filter(
         user=request.user
-    ).select_related('course__teacher__profile')
-    return render(request, 'Library/courses/my_courses.html', {'enrollments': enrollments})
-
+    ).select_related('course__teacher__profile').order_by('-enrolled_at')
+    
+    return render(request, 'Library/courses/my_courses.html', {
+        'enrollments': enrollments
+    })
 
 @login_required
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id, is_published=True)
-    is_enrolled = Enrollment.objects.filter(user=request.user, course=course, status='enrolled').exists()
+    enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
+    is_enrolled = enrollment and enrollment.status in ['enrolled', 'completed']
+    is_completed = enrollment and enrollment.status == 'completed'
     is_teacher = course.teacher == request.user
     modules = course.modules.prefetch_related('lessons__exercise_groups')
     return render(request, 'Library/courses/course_detail.html', {
-        'course': course, 'is_enrolled': is_enrolled, 'is_teacher': is_teacher, 'modules': modules
+        'course': course,
+        'is_enrolled': is_enrolled,
+        'is_completed': is_completed,
+        'is_teacher': is_teacher,
+        'modules': modules
     })
 
 
@@ -208,19 +216,20 @@ def add_video(request, group_id):
 
 
 @login_required
-@login_required
 def exercise_group_view(request, group_id):
     group = get_object_or_404(ExerciseGroup, id=group_id)
     course = group.lesson.module.course
     is_teacher = course.teacher == request.user
+    
     if not is_teacher:
-        if not (group.lesson.module.is_open and group.lesson.is_open):
-            messages.error(request, 'Цей модуль або урок закритий для учнів')
-            return redirect('Library:course_detail', course_id=course.id)
-        
-        if not Enrollment.objects.filter(user=request.user, course=course, status='enrolled').exists():
+        enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
+        if not enrollment or enrollment.status not in ['enrolled', 'completed']:
             messages.error(request, 'Ви не записані на цей курс')
             return redirect('Library:home')
+        
+        if not (group.lesson.module.is_open and group.lesson.is_open):
+            messages.error(request, 'Цей модуль або урок закритий')
+            return redirect('Library:course_detail', course_id=course.id)
     user_answers = {ans.question.id: ans for ans in UserAnswer.objects.filter(user=request.user, question__exercise_group=group)}
     prev_group = ExerciseGroup.objects.filter(lesson=group.lesson, order__lt=group.order).order_by('-order').first()
     next_group = ExerciseGroup.objects.filter(lesson=group.lesson, order__gt=group.order).order_by('order').first()
@@ -235,15 +244,16 @@ def mark_exercise_complete(request, exercise_group_id):
     group = get_object_or_404(ExerciseGroup, id=exercise_group_id)
     course = group.lesson.module.course
     
-    if Enrollment.objects.filter(user=request.user, course=course, status='enrolled').exists():
+    enrollment = Enrollment.objects.filter(user=request.user, course=course).first()
+    if enrollment and enrollment.status in ['enrolled', 'completed']:
         ExerciseGroupCompletion.objects.get_or_create(user=request.user, exercise_group=group)
+        
         total_groups = ExerciseGroup.objects.filter(lesson__module__course=course).count()
         completed_groups = ExerciseGroupCompletion.objects.filter(
             user=request.user, exercise_group__lesson__module__course=course
         ).count()
         
-        if completed_groups == total_groups:
-            enrollment = Enrollment.objects.get(user=request.user, course=course)
+        if completed_groups == total_groups and enrollment.status != 'completed':
             enrollment.status = 'completed'
             enrollment.save()
             
