@@ -22,7 +22,9 @@ def menu(request):
 
 @login_required
 def my_courses(request):
-    enrollments = Enrollment.objects.filter(user=request.user, status='enrolled').select_related('course__teacher__profile')
+    enrollments = Enrollment.objects.filter(
+        user=request.user
+    ).select_related('course__teacher__profile')
     return render(request, 'Library/courses/my_courses.html', {'enrollments': enrollments})
 
 
@@ -145,20 +147,28 @@ def add_question(request, group_id):
     if group.lesson.module.course.teacher != request.user:
         messages.error(request, 'Доступ заборонено')
         return redirect('Library:home')
+    
     if request.method == 'POST':
         form = QuestionForm(request.POST)
         if form.is_valid():
             question = form.save(commit=False)
             question.exercise_group = group
             question.save()
-            form.save_m2m() 
+            QuestionOption.objects.filter(question=question).delete()
+            for i in range(1, 5):
+                opt_text = form.cleaned_data.get(f'option_{i}')
+                if opt_text:
+                    QuestionOption.objects.create(
+                        question=question,
+                        text=opt_text,
+                        is_correct=(str(i) == form.cleaned_data['correct_option']),
+                        order=i
+                    )
             messages.success(request, 'Питання додано')
             return redirect('Library:exercise_group_view', group_id=group.id)
     else:
         form = QuestionForm()
     return render(request, 'Library/courses/form.html', {'form': form, 'title': 'Додати Питання'})
-
-
 @login_required
 def add_code(request, group_id):
     group = get_object_or_404(ExerciseGroup, id=group_id)
@@ -198,11 +208,16 @@ def add_video(request, group_id):
 
 
 @login_required
+@login_required
 def exercise_group_view(request, group_id):
     group = get_object_or_404(ExerciseGroup, id=group_id)
     course = group.lesson.module.course
     is_teacher = course.teacher == request.user
     if not is_teacher:
+        if not (group.lesson.module.is_open and group.lesson.is_open):
+            messages.error(request, 'Цей модуль або урок закритий для учнів')
+            return redirect('Library:course_detail', course_id=course.id)
+        
         if not Enrollment.objects.filter(user=request.user, course=course, status='enrolled').exists():
             messages.error(request, 'Ви не записані на цей курс')
             return redirect('Library:home')
@@ -219,27 +234,32 @@ def exercise_group_view(request, group_id):
 def mark_exercise_complete(request, exercise_group_id):
     group = get_object_or_404(ExerciseGroup, id=exercise_group_id)
     course = group.lesson.module.course
+    
     if Enrollment.objects.filter(user=request.user, course=course, status='enrolled').exists():
         ExerciseGroupCompletion.objects.get_or_create(user=request.user, exercise_group=group)
-        messages.success(request, 'Вправу позначено як виконану')
         total_groups = ExerciseGroup.objects.filter(lesson__module__course=course).count()
-        completed_groups = ExerciseGroupCompletion.objects.filter(user=request.user, exercise_group__lesson__module__course=course).count()
+        completed_groups = ExerciseGroupCompletion.objects.filter(
+            user=request.user, exercise_group__lesson__module__course=course
+        ).count()
+        
         if completed_groups == total_groups:
-            course_grade, created = CourseGrade.objects.get_or_create(user=request.user, course=course)
+            enrollment = Enrollment.objects.get(user=request.user, course=course)
+            enrollment.status = 'completed'
+            enrollment.save()
+            
+            course_grade, _ = CourseGrade.objects.get_or_create(user=request.user, course=course)
             course_grade.grade = course_grade.auto_calculate_grade()
             course_grade.save()
 
             if not Certificate.objects.filter(user=request.user, course=course).exists():
                 Certificate.objects.create(
-                    user=request.user,
-                    course=course,
-                    total_score=course_grade.grade
+                    user=request.user, course=course, total_score=course_grade.grade
                 )
                 course_grade.certificate_issued = True
                 course_grade.save()
-                messages.success(request, '🎉 Курс завершено! Сертифікат автоматично видано.')
+                messages.success(request, '🎉 Курс завершено! Сертифікат видано.')
+        
         return redirect('Library:exercise_group_view', group_id=group.id)
-
 
 @login_required
 def answer_question(request, question_id):

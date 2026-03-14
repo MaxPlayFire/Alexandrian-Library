@@ -34,26 +34,28 @@
         </div>
         {% endif %}
         
-        {% for module in modules %}
-<div class="module-section">
-    <div class="module-header">
-        <h2>{{ module.order }}. {{ module.title }}</h2>
-        
-        <div class="module-actions">
-            {% if not is_teacher %}
-            <div class="module-progress">{{ module|completion_for_user:request.user }}%</div>
-            {% else %}
+{% for module in modules %}
+    {% if is_teacher or module.is_open %}
+    <div class="module-section">
+        <div class="module-header">
+            <h2>{{ module.order }}. {{ module.title }}</h2>
+            
+            <div class="module-actions">
+                {% if not is_teacher %}
+                <div class="module-progress">{{ module|completion_for_user:request.user }}%</div>
+                {% else %}
             <a href="{% url 'Library:create_lesson' module.id %}" class="btn btn-sm">
                 <i class="fas fa-plus"></i> Додати Урок
             </a>
             
             <a href="{% url 'Library:toggle_module' module.id %}" 
-               class="btn btn-sm" style="margin-left: 8px;">
+               class="btn btn-sm" style="margin-left: 8px; font-size: 18px;">
                 {% if module.is_open %}🔓 Закрити модуль{% else %}🔒 Відкрити модуль{% endif %}
             </a>
             {% endif %}
         </div>
     </div>
+    {% endif %}
 
     <div class="lessons-map">
         {% for lesson in module.lessons.all %}
@@ -77,7 +79,7 @@
             
             {% if is_teacher %}
             <a href="{% url 'Library:toggle_lesson' lesson.id %}" 
-               class="btn btn-sm" style="font-size:12px; margin-left: 10px;">
+               class="btn btn-sm" style="font-size:18px; margin-left: 10px;">
                 {% if lesson.is_open %}🔓{% else %}🔒{% endif %}
             </a>
             {% endif %}
